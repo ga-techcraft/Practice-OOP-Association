@@ -10,6 +10,47 @@ class Wallet {
   public Wallet() {
   }
 
+  public Wallet(int money, String denomination){
+    if (denomination == "highestFirst") {
+      bill100 = money / 100;
+      money %= 100;
+
+      bill50 = money / 50;
+      money %= 50;
+
+      bill20 = money / 20;
+      money %= 20;
+
+      bill10 = money / 10;
+      money %= 10;
+
+      bill5 = money / 5;
+      money %= 5;
+
+      bill1 = money;
+
+    } else if (denomination == "dollars") {
+      bill1 = money;
+    } else if (denomination == "twenties") {
+      bill20 = money / 20;
+      money %= 20;
+
+      bill100 = money / 100;
+      money %= 100;
+
+      bill50 = money / 50;
+      money %= 50;
+
+      bill10 = money / 10;
+      money %= 10;
+
+      bill5 = money / 5;
+      money %= 5;
+
+      bill1 = money;
+    }
+  }
+
   // コンストラクタ（引数あり）
   public Wallet(int bill1, int bill5, int bill10, int bill20, int bill50, int bill100) {
     this.bill1 = bill1;
@@ -24,6 +65,27 @@ class Wallet {
   public int getTotalMoney() {
     return (1 * bill1) + (5 * bill5) + (10 * bill10) + (20 * bill20) + (50 * bill50) + (100 * bill100);
   }
+
+  public void transferWallet(Wallet insertWallet) {
+    this.bill1 += insertWallet.bill1;
+    insertWallet.removeBill(1,insertWallet.bill1);
+
+    this.bill5 += insertWallet.bill5;
+    insertWallet.removeBill(5,insertWallet.bill5);
+
+    this.bill10 += insertWallet.bill10;
+    insertWallet.removeBill(10,insertWallet.bill10);
+
+    this.bill20 += insertWallet.bill20;
+    insertWallet.removeBill(20,insertWallet.bill20);
+
+    this.bill50 += insertWallet.bill50;
+    insertWallet.removeBill(50,insertWallet.bill50);
+    
+    this.bill100 += insertWallet.bill100;
+    insertWallet.removeBill(100,insertWallet.bill100);
+  }
+  
 
   // 指定されたbillとその枚数を、財布に追加する。
   public int insertBill(int bill, int amount) {
@@ -80,6 +142,10 @@ class Wallet {
 
     return bill * amount;
   }
+
+  public int[] toArray(){
+    return new int[] { bill100, bill50, bill20, bill10, bill5, bill1 };
+  }
 }
 
 class Person {
@@ -120,67 +186,19 @@ class Person {
     return this.wallet.getTotalMoney();
   }
 
-  public int[] exchange(int money) {
-    if (this.denomination == "highestFirst") {
-      int bill100 = money / 100;
-      money %= 100;
-
-      int bill50 = money / 50;
-      money %= 50;
-
-      int bill20 = money / 20;
-      money %= 20;
-
-      int bill10 = money / 10;
-      money %= 10;
-
-      int bill5 = money / 5;
-      money %= 5;
-
-      int bill1 = money;
-
-      return new int[] { bill100, bill50, bill20, bill10, bill5, bill1 };
-
-    } else if (this.denomination == "dollars") {
-      return new int[] { 0, 0, 0, 0, 0, money };
-
-    } else if (this.denomination == "twenties") {
-      int bill20 = money / 20;
-      money %= 20;
-
-      int bill100 = money / 100;
-      money %= 100;
-
-      int bill50 = money / 50;
-      money %= 50;
-
-      int bill10 = money / 10;
-      money %= 10;
-
-      int bill5 = money / 5;
-      money %= 5;
-
-      int bill1 = money;
-
-      return new int[] { bill100, bill50, bill20, bill10, bill5, bill1 };
-    } else {
-      return new int[] {};
-    }
-  }
-
   // 設定されたお金の取り扱い方によって、財布にお金を追加する
   public int[] getPayed(int money) {
     if (this.wallet == null) {
       return new int[]{};
     }
 
-    int[] moneyArr = this.exchange(money);
-    int[] moneyType = {100, 50, 20, 10, 5, 1};
+    Wallet payedWallet = new Wallet(money, denomination);
 
-    for (int i = 0; i < moneyType.length; i++) {
-      this.wallet.insertBill(moneyType[i], moneyArr[i]);
-    }
-    return moneyArr;
+    int[] result = payedWallet.toArray();
+
+    this.wallet.transferWallet(payedWallet);
+    
+    return result;
   }
 
   // 設定されたお金の取り扱い方によって、財布からお金を抜く
@@ -189,7 +207,7 @@ class Person {
       return new int[]{};
     }
 
-    int[] moneyArr = this.exchange(money);
+    int[] moneyArr = new Wallet(money, denomination).toArray();
     int[] moneyType = {100, 50, 20, 10, 5, 1};
 
     for (int i = 0; i < moneyType.length; i++) {
@@ -256,7 +274,3 @@ class Main {
     System.out.println(p.getCash());
   }
 }
-
-// 学んだこと
-// 文字列の＝＝は参照の一致しているかどうかの確認になる
-// 
